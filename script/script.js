@@ -33,7 +33,7 @@ $(document).ready(() => {
         }
     });
     
-    // Function to show a toaster
+        // Function to show a toaster
     const showToast = (message, dg) => {
         const toast = `
             <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-animation="true" data-bs-delay="3000">
