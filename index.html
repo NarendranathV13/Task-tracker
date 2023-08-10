@@ -12,6 +12,7 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
   </head>
   <body>
+    <div class="disp">
     <nav class="navbar navbar-light bg-light shadow-lg">
         <div class="container">
           <a class="navbar-brand"><h2 class="text-white">Task Tracker</h2></a>
@@ -25,27 +26,21 @@
           </form>
         </div>
       </nav>
-    <div class="container">
-        <div class="row mt-5">
-            <div class="addTask col-lg-4">
-                <h3 class="bg-primary text-center p-3 rounded-3">To-Do</h3>
-                <ul id="sortable1" class="droptrue sortable">
+      <div class="container-fluid lists">
+        <div class="addTask listContainer">
+            <h3 class="bg-primary text-center p-3 rounded-3">To-Do</h3>
+            <ul id="sortable1" class="droptrue sortable">
 
-                </ul>
-            </div>
-            <div class="inProgress col-lg-4">
-                <h3 class="bg-warning text-center p-3 rounded-3">In-Progress</h3>
-                <ul id="sortable2" class="dropfalse sortable ">
-
-                </ul>
-            </div>
-            <div class="listName col-lg-4">
-                <h3 class="bg-info text-center p-3 rounded-3" id="listNames">Enter List Name</h3>
-                <ul id="sortable3" class="dropfalse sortable">
-
-                </ul>
-            </div>
+            </ul>
         </div>
+        <div class="inProgress listContainer">
+            <h3 class="bg-warning text-center p-3 rounded-3">In-Progress</h3>
+            <ul id="sortable2" class="dropfalse sortable ">
+
+            </ul>
+        </div>
+    
+
     </div>
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
         <div id="toastContainer" class="toast-container"></div>
@@ -101,5 +96,6 @@
     </div>
     <script src="script/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-  </body>
+</div>  
+</body>
 </html>

@@ -5,16 +5,34 @@ $(document).ready(() => {
         const tasks = {
             todo: $("#sortable1").html(),
             inProgress: $("#sortable2").html(),
-            listName: $("#sortable3").html()
         };
+        const allLists = {};
+        $(".listContainer").each(function() {
+            const listId = $(this).find("ul").attr("id");
+            allLists[listId] = $(this).prop("outerHTML");
+        });
+        localStorage.setItem("allLists", JSON.stringify(allLists));
         localStorage.setItem("tasks", JSON.stringify(tasks));
     };
     const loadTasksFromLocalStorage = () => {
+        const allLists = JSON.parse(localStorage.getItem("allLists"));
         const tasks = JSON.parse(localStorage.getItem("tasks"));
+        if (allLists) {
+            // Replace existing lists with loaded lists
+            $(".lists").html(Object.values(allLists).join(""));
+            // Reinitialize sortable for all lists
+            $(".sortable").sortable({
+                connectWith: ".sortable",
+                stop: (event, ui) => {
+                    saveTasksToLocalStorage();                    
+                    const taskName = ui.item.find("h4").text();
+                    showToast(`Task "${taskName}" is moved successfully`, scs);
+                }
+            }).disableSelection();
+        }
         if (tasks) {
             $("#sortable1").html(tasks.todo);
             $("#sortable2").html(tasks.inProgress);
-            $("#sortable3").html(tasks.listName);
         }
     };
     loadTasksFromLocalStorage();
@@ -26,13 +44,11 @@ $(document).ready(() => {
         const targetSortable = $(this).data("target");
         const taskItem = $("#editModal").data("taskItem");
         const currentSortable = taskItem.parent().attr("id");
-
         if (targetSortable !== currentSortable) {
             // Only move the task to the targetSortable when Save is clicked
             taskItem.data("targetSortable", targetSortable);
         }
     });
-    
         // Function to show a toaster
     const showToast = (message, dg) => {
         const toast = `
@@ -45,7 +61,7 @@ $(document).ready(() => {
         $("#toastContainer").html(toast); // Replace existing toasts with new toast
         $(".toast").toast('show');
     }
-    const deleteTask = (taskItem) => {
+        const deleteTask = (taskItem) => {
         const modal = `
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -77,38 +93,47 @@ $(document).ready(() => {
             $(this).remove();
         });
     }
-    const updateListName = () => {
-        const updatedListName = $("#listNameInput").val().trim();
-        if (updatedListName !== "") {
-            $("#listNames").text(updatedListName);
-        }
-        $("#listNameInput").replaceWith(`<h3 class='bg-info text-center p-3 rounded-3' id='listNames'>${updatedListName}</h3>`);
-        enableSortable3();
-    };
     const enableSortable3 = () => {
-        $("#sortable3").sortable({
-            connectWith: "#sortable1, #sortable2"
+        $(".sortable3").sortable({
+            connectWith: ".sortable"
         }).disableSelection();
     };
     $("#addNewList").click(() => {
         $(".listName").show();
         enableSortable3(); // Enable sorting for sortable3 when a new list is added
     });
+    let allow=true;
+    let listCounter = 3; // Initialize the counter for new list IDs
     $("#addNewList").click(() => {
-        if ($("#listNameInput").length === 0) {
-            $(".listName").show();
-            const currentListName = $("#listNames").text().trim();
-            $("#listNames").replaceWith(`<input type='text' class='form-control' id='listNameInput' placeholder='Enter List Name' value='${currentListName}'>`);
-            $("#listNameInput").focus();
-        }
-        $(this).prop("disabled", true);
+        if(allow==true){
+        // Append the new list container
+        const newListId = "sortable" + listCounter;
+        const newList = $(`<div class="listName listContainer">
+                                <input type='text' class='form-control listNameInput' placeholder='Enter List Name'>
+                            <ul id="${newListId}" class="dropfalse sortable"></ul>
+                        </div>`);
+        $(".lists").append(newList);        
+        $("#" + newListId).sortable({
+            connectWith: ".sortable",
+            stop: (event, ui) => {
+                saveTasksToLocalStorage();
+                const taskName = ui.item.find("h4").text();
+                showToast(`Task "${taskName}" is moved successfully`, scs);
+            }
+        });
+        listCounter++; // Increment the counter for the next list
+    }
+    allow=false;
+    saveTasksToLocalStorage();
     });
-    $(document).on("focusout", "#listNameInput", () => {
-        updateListName();
-        // Enable the "Add New List" button after updating the list name
-        $("#addNewList").prop("disabled", false);
-    });;
-    $(document).on("click", "#listNameInput", () => {
+    $(document).on("focusout", ".listNameInput", function () {
+        const newName = $(this).val().trim();
+        if (newName !== "") {
+            $(this).replaceWith(`<h3 class="bg-info text-center p-3 rounded-3">${newName}</h3>`);
+            allow=true;
+        }
+    });
+    $(document).on("click", ".listNameInput", function () {
         $(this).val("");
     });
     // Function to validate and add tasks
@@ -178,31 +203,14 @@ $(document).ready(() => {
     $("#addNewList").click(function () {
         $(".listName").show();
     });
-
     // Make the "To-Do" list sortable and droppable in the "In-Progress"
-    $("#sortable1").sortable({
-        connectWith: "#sortable2, #sortable3",
+    $(".sortable").sortable({
+        connectWith: ".sortable",
         stop: (event, ui) => {
             saveTasksToLocalStorage();
-            if (ui.item.parent().attr("id") === "sortable2") {
-                const taskName = ui.item.find("h4").text();
-                showToast(`Task "${taskName}" is moved to In-Progress`, wr);
-            }
+            const taskName = ui.item.find("h4").text();
+            showToast(`Task "${taskName}" is moved successfully`, scs);
         }
-    }).disableSelection();
-    $("#sortable2").sortable({
-        connectWith: "#sortable1, #sortable3",
-        stop: (event, ui) => {
-            saveTasksToLocalStorage();
-            if (ui.item.parent().attr("id") === "sortable1") {
-                const taskName = ui.item.find("h4").text();
-                showToast(`Again "${taskName}" is moved back to To-do`, scs);
-            }
-        }
-    }).disableSelection();
-    $("#sortable3").sortable({
-        connectWith: "#sortable1, #sortable2",
-        stop: () => saveTasksToLocalStorage() // Save tasks after sorting
     }).disableSelection();
     $(document).on("click", "#sortable1 li, #sortable2 li, #sortable3 li", (event) => {
         const taskItem = $(event.currentTarget);
