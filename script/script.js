@@ -1,5 +1,4 @@
 $(document).ready(() => {
-    $("#error1, #error2").hide();
     var uniqueId = 1; // Initialize a unique ID counter
     const dg = "danger", scs = "success", wr = "warning";
     const saveTasksToLocalStorage = () => {
@@ -21,6 +20,7 @@ $(document).ready(() => {
     loadTasksFromLocalStorage();
     // Hide .listName div by default
     $(".listName").hide();
+    $(document).off("click", ".dropdown-item");
     $(document).on("click", ".dropdown-item", function (event) {
         event.preventDefault();
         const targetSortable = $(this).data("target");
@@ -28,8 +28,8 @@ $(document).ready(() => {
         const currentSortable = taskItem.parent().attr("id");
 
         if (targetSortable !== currentSortable) {
-            $("#" + targetSortable).append(taskItem);
-            saveTasksToLocalStorage();
+            // Only move the task to the targetSortable when Save is clicked
+            taskItem.data("targetSortable", targetSortable);
         }
     });
     
@@ -178,6 +178,7 @@ $(document).ready(() => {
     $("#addNewList").click(function () {
         $(".listName").show();
     });
+
     // Make the "To-Do" list sortable and droppable in the "In-Progress"
     $("#sortable1").sortable({
         connectWith: "#sortable2, #sortable3",
@@ -231,6 +232,10 @@ $(document).ready(() => {
         const editedDesc = $("#editTaskDesc").val().trim();
         const taskItem = $("#editModal").data("taskItem");
         const parentList = $("#editModal").data("parentList");
+        const targetSortable = taskItem.data("targetSortable");
+        if (targetSortable && targetSortable !== taskItem.parent().attr("id")) {
+            $("#" + targetSortable).append(taskItem);
+        }
         if (editedName !== "") {
             taskItem.find("h4").text(editedName);
         }
