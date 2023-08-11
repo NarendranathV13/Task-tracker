@@ -20,6 +20,42 @@ $(document).ready(() => {
       $(".dropdown-menu").html(dropdownItems.join(""));
     }
   };
+    // Function to update position dropdown
+    const updatePositionDropdown = (ulId) => {
+        const liCount = $("#" + ulId).children("li").length;
+        let positionOptions = "";
+        for (let i = 0; i < liCount; i++) {
+          positionOptions += `<li><a class="dropdown-item" href="#">${i+1}</a></li>`;
+        }
+        $("#position").html(positionOptions);
+      };
+        // When the dropdown button for position is clicked
+  $(document).on("click", "#dropdownMenuButton2", function () {
+    const taskItem = $("#editModal").data("taskItem");
+    const parentUlId = taskItem.parent().attr("id");
+    updatePositionDropdown(parentUlId);
+  });
+  $(document).on("click", "#position .dropdown-item", function () {
+    const newPosition = $(this).text();
+    const taskItem = $("#editModal").data("taskItem");
+    const parentUlId = taskItem.parent().attr("id");
+    const targetSortable = $("#" + parentUlId);
+    const currentIndex = taskItem.index();
+    const targetIndex = parseInt(newPosition)-1;
+    if (currentIndex !== targetIndex) {
+      if (targetIndex >= targetSortable.children("li").length) {
+        targetSortable.append(taskItem);
+      } else {
+        // targetSortable.children("li").eq(targetIndex).before(taskItem);
+           if (targetIndex < currentIndex) {
+        targetSortable.children("li").eq(targetIndex).before(taskItem);
+      } else {
+        targetSortable.children("li").eq(targetIndex).after(taskItem);
+      }
+      }
+      saveTasksToLocalStorage();
+    }
+  });
   const saveTasksToLocalStorage = () => {
     const allLists = {};
     const dropdownItems = [];
