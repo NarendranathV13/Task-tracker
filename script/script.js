@@ -1,5 +1,6 @@
 $(document).ready(() => {
   var uniqueId = 1; // Initialize a unique ID counter
+  let selectedNewPosition = null;
   const dg = "danger",
     scs = "success",
     wr = "warning";
@@ -35,27 +36,30 @@ $(document).ready(() => {
     const parentUlId = taskItem.parent().attr("id");
     updatePositionDropdown(parentUlId);
   });
-  $(document).on("click", "#position .dropdown-item", function () {
-    const newPosition = $(this).text();
-    const taskItem = $("#editModal").data("taskItem");
+    // When an option in the position dropdown is clicked
+    $(document).on("click", "#position .dropdown-item", function () {
+        selectedNewPosition = $(this).text(); // Store the selected position
+      });
+// Reorder tasks within the same list
+const reorderTasks = (taskItem, newPosition) => {
     const parentUlId = taskItem.parent().attr("id");
     const targetSortable = $("#" + parentUlId);
     const currentIndex = taskItem.index();
-    const targetIndex = parseInt(newPosition)-1;
+    const targetIndex = parseInt(newPosition) - 1;
+  
     if (currentIndex !== targetIndex) {
       if (targetIndex >= targetSortable.children("li").length) {
         targetSortable.append(taskItem);
       } else {
-        // targetSortable.children("li").eq(targetIndex).before(taskItem);
-           if (targetIndex < currentIndex) {
-        targetSortable.children("li").eq(targetIndex).before(taskItem);
-      } else {
-        targetSortable.children("li").eq(targetIndex).after(taskItem);
-      }
+        if (targetIndex < currentIndex) {
+          targetSortable.children("li").eq(targetIndex).before(taskItem);
+        } else {
+          targetSortable.children("li").eq(targetIndex).after(taskItem);
+        }
       }
       saveTasksToLocalStorage();
     }
-  });
+  };
   const saveTasksToLocalStorage = () => {
     const allLists = {};
     const dropdownItems = [];
@@ -302,20 +306,30 @@ $(document).ready(() => {
     const taskItem = $("#editModal").data("taskItem");
     const parentList = $("#editModal").data("parentList");
     const targetSortable = taskItem.data("targetSortable");
+    
     if (targetSortable && targetSortable !== taskItem.parent().attr("id")) {
       $("#" + targetSortable).append(taskItem);
     }
+    
+    if (selectedNewPosition !== null) {
+        reorderTasks(taskItem, selectedNewPosition);
+        selectedNewPosition = null; // Reset selected position
+      }
+  
     if (editedName !== "") {
       taskItem.find("h4").text(editedName);
     }
     taskItem.find(".task-desc").text(editedDesc);
+    
     // Move the task to the appropriate list if needed
     if (parentList !== taskItem.parent().attr("id")) {
       $("#" + parentList).append(taskItem);
     }
+    
     $("#editModal").modal("hide");
     saveTasksToLocalStorage();
   });
+  
   $(document).on("click", ".delete-task", function (event) {
     event.stopPropagation(); // Stop event propagation
     var taskItem = $(this).closest("li");
