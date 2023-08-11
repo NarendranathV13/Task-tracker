@@ -262,9 +262,9 @@ $(document).ready(() => {
     saveTasksToLocalStorage();
   });
   // Show .listName div on clicking #addNewList
-  $("#addNewList").click(function () {
+  $("#addNewList").click(() => {
     $(".listName").show();
-  });
+  });  
   // Make the "To-Do" list sortable and droppable in the "In-Progress"
   $(".sortable")
     .sortable({
@@ -301,30 +301,30 @@ $(document).ready(() => {
     const taskItem = $(this).closest("li");
     editTask(taskItem);
   });
-  $("#saveEditTask").click(function () {
-    const editedName = $("#editTaskName").val().trim();
-    const editedDesc = $("#editTaskDesc").val().trim();
-    const taskItem = $("#editModal").data("taskItem");
-    const parentList = $("#editModal").data("parentList");
-    const targetSortable = taskItem.data("targetSortable");
-    if (targetSortable && targetSortable !== taskItem.parent().attr("id")) {
-      $("#" + targetSortable).append(taskItem);
-    }
-    if (selectedNewPosition !== null) {
-      reorderTasks(taskItem, selectedNewPosition);
-      selectedNewPosition = null; // Reset selected position
-    }
-    if (editedName !== "") {
-      taskItem.find("h4").text(editedName);
-    }
-    taskItem.find(".task-desc").text(editedDesc);
-    // Move the task to the appropriate list if needed
-    if (parentList !== taskItem.parent().attr("id")) {
-      $("#" + parentList).append(taskItem);
-    }
-    $("#editModal").modal("hide");
-    saveTasksToLocalStorage();
-  });
+ $("#saveEditTask").click(() => {
+  const editedName = $("#editTaskName").val().trim();
+  const editedDesc = $("#editTaskDesc").val().trim();
+  const taskItem = $("#editModal").data("taskItem");
+  const parentList = $("#editModal").data("parentList");
+  const targetSortable = taskItem.data("targetSortable");
+  if (targetSortable && targetSortable !== taskItem.parent().attr("id")) {
+    $("#" + targetSortable).append(taskItem);
+  }
+  if (selectedNewPosition !== null) {
+    reorderTasks(taskItem, selectedNewPosition);
+    selectedNewPosition = null; // Reset selected position
+  }
+  if (editedName !== "") {
+    taskItem.find("h4").text(editedName);
+  }
+  taskItem.find(".task-desc").text(editedDesc);
+  // Move the task to the appropriate list if needed
+  if (parentList !== taskItem.parent().attr("id")) {
+    $("#" + parentList).append(taskItem);
+  }
+  $("#editModal").modal("hide");
+  saveTasksToLocalStorage();
+});
   $(document).on("click", ".delete-task", function (event) {
     event.stopPropagation(); // Stop event propagation
     var taskItem = $(this).closest("li");
