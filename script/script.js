@@ -1,11 +1,13 @@
 $(document).ready(() => {
-  var uniqueId = 1; // Initialize a unique ID counter
+  let uniqueId = parseInt(localStorage.getItem("uniqueId")) || 1; // Initialize uniqueId
+  let listCounter = parseInt(localStorage.getItem("listCounter")) || 3; // Initialize listCounter
   let selectedNewPosition = null;
   const dg = "danger",
-    scs = "success",
-    wr = "warning";
-  let listCounter = parseInt(localStorage.getItem("listCounter")) || 3; // Initialize listCounter
-  if (listCounter === 2) {
+    scs = "success";
+  const saveUniqueIdToLocalStorage = () => {
+    localStorage.setItem("uniqueId", uniqueId);
+  };
+  if (listCounter === 2) {// changing the id after 2 count
     listCounter += 1;
     saveListCounter();
   }
@@ -21,32 +23,33 @@ $(document).ready(() => {
       $(".dropdown-menu").html(dropdownItems.join(""));
     }
   };
-    // Function to update position dropdown
-    const updatePositionDropdown = (ulId) => {
-        const liCount = $("#" + ulId).children("li").length;
-        let positionOptions = "";
-        for (let i = 0; i < liCount; i++) {
-          positionOptions += `<li><a class="dropdown-item" href="#">${i+1}</a></li>`;
-        }
-        $("#position").html(positionOptions);
-      };
-        // When the dropdown button for position is clicked
+  // Function to update position dropdown
+  const updatePositionDropdown = (ulId) => {
+    const liCount = $("#" + ulId).children("li").length;
+    let positionOptions = "";
+    for (let i = 0; i < liCount; i++) {
+      positionOptions += `<li><a class="dropdown-item" href="#">${
+        i + 1
+      }</a></li>`;
+    }
+    $("#position").html(positionOptions);
+  };
+  // the dropdown button for position is clicked
   $(document).on("click", "#dropdownMenuButton2", function () {
     const taskItem = $("#editModal").data("taskItem");
     const parentUlId = taskItem.parent().attr("id");
     updatePositionDropdown(parentUlId);
   });
-    // When an option in the position dropdown is clicked
-    $(document).on("click", "#position .dropdown-item", function () {
-        selectedNewPosition = $(this).text(); // Store the selected position
-      });
-// Reorder tasks within the same list
-const reorderTasks = (taskItem, newPosition) => {
+  // option in the position dropdown is clicked
+  $(document).on("click", "#position .dropdown-item", function () {
+    selectedNewPosition = $(this).text(); // Store the selected position
+  });
+  // Reorder tasks within the same list
+  const reorderTasks = (taskItem, newPosition) => {
     const parentUlId = taskItem.parent().attr("id");
     const targetSortable = $("#" + parentUlId);
     const currentIndex = taskItem.index();
     const targetIndex = parseInt(newPosition) - 1;
-  
     if (currentIndex !== targetIndex) {
       if (targetIndex >= targetSortable.children("li").length) {
         targetSortable.append(taskItem);
@@ -60,7 +63,7 @@ const reorderTasks = (taskItem, newPosition) => {
       saveTasksToLocalStorage();
     }
   };
-  const saveTasksToLocalStorage = () => {
+  const saveTasksToLocalStorage = () => {//local storage
     const allLists = {};
     const dropdownItems = [];
     $(".listContainer").each(function () {
@@ -73,12 +76,12 @@ const reorderTasks = (taskItem, newPosition) => {
     localStorage.setItem("allLists", JSON.stringify(allLists));
     saveDropdownItemsToLocalStorage(dropdownItems);
   };
-  const loadTasksFromLocalStorage = () => {
+  const loadTasksFromLocalStorage = () => {//loading from local
     const allLists = JSON.parse(localStorage.getItem("allLists"));
     if (allLists) {
-      // Replace existing lists with loaded lists
+      // Replace existing lists with loaded
       $(".lists").html(Object.values(allLists).join(""));
-      // Reinitialize sortable for all lists
+      // Reinitialize sortable for all
       $(".sortable")
         .sortable({
           connectWith: ".sortable",
@@ -93,7 +96,6 @@ const reorderTasks = (taskItem, newPosition) => {
     loadDropdownItemsFromLocalStorage();
   };
   loadTasksFromLocalStorage();
-  // Hide .listName div by default
   $(".listName").show();
   $(document).off("click", ".dropdown-item");
   $(document).on("click", ".dropdown-item", function (event) {
@@ -102,20 +104,18 @@ const reorderTasks = (taskItem, newPosition) => {
     const taskItem = $("#editModal").data("taskItem");
     const currentSortable = taskItem.parent().attr("id");
     if (targetSortable !== currentSortable) {
-      // Only move the task to the targetSortable when Save is clicked
       taskItem.data("targetSortable", targetSortable);
     }
   });
-  // Function to show a toaster$(".sortable
+  // Function to show a toaster
   const showToast = (message, dg) => {
     const toast = `
             <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-animation="true" data-bs-delay="3000">
                 <div class="toast-body text-white bg-${dg}">
                     ${message}
                 </div>
-            </div>
-        `;
-    $("#toastContainer").html(toast); // Replace existing toasts with new toast
+            </div>`;
+    $("#toastContainer").html(toast);
     $(".toast").toast("show");
   };
   const deleteTask = (taskItem) => {
@@ -258,6 +258,7 @@ const reorderTasks = (taskItem, newPosition) => {
       deleteTask(taskItem);
       saveTasksToLocalStorage();
     });
+    saveUniqueIdToLocalStorage();
     saveTasksToLocalStorage();
   });
   // Show .listName div on clicking #addNewList
@@ -306,30 +307,24 @@ const reorderTasks = (taskItem, newPosition) => {
     const taskItem = $("#editModal").data("taskItem");
     const parentList = $("#editModal").data("parentList");
     const targetSortable = taskItem.data("targetSortable");
-    
     if (targetSortable && targetSortable !== taskItem.parent().attr("id")) {
       $("#" + targetSortable).append(taskItem);
     }
-    
     if (selectedNewPosition !== null) {
-        reorderTasks(taskItem, selectedNewPosition);
-        selectedNewPosition = null; // Reset selected position
-      }
-  
+      reorderTasks(taskItem, selectedNewPosition);
+      selectedNewPosition = null; // Reset selected position
+    }
     if (editedName !== "") {
       taskItem.find("h4").text(editedName);
     }
     taskItem.find(".task-desc").text(editedDesc);
-    
     // Move the task to the appropriate list if needed
     if (parentList !== taskItem.parent().attr("id")) {
       $("#" + parentList).append(taskItem);
     }
-    
     $("#editModal").modal("hide");
     saveTasksToLocalStorage();
   });
-  
   $(document).on("click", ".delete-task", function (event) {
     event.stopPropagation(); // Stop event propagation
     var taskItem = $(this).closest("li");
