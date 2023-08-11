@@ -11,13 +11,27 @@ $(document).ready(() => {
   const saveListCounter = () => {
     localStorage.setItem("listCounter", listCounter);
   };
+  const saveDropdownItemsToLocalStorage = (dropdownItems) => {
+    localStorage.setItem("dropdownItems", JSON.stringify(dropdownItems));
+  };
+  const loadDropdownItemsFromLocalStorage = () => {
+    const dropdownItems = JSON.parse(localStorage.getItem("dropdownItems"));
+    if (dropdownItems) {
+      $(".dropdown-menu").html(dropdownItems.join(""));
+    }
+  };
   const saveTasksToLocalStorage = () => {
     const allLists = {};
+    const dropdownItems = [];
     $(".listContainer").each(function () {
       const listId = $(this).find("ul").attr("id");
       allLists[listId] = $(this).prop("outerHTML");
+      const h3Text = $(this).find("h3").text();
+      const dropdownItem = `<li><a class="dropdown-item" href="#" data-target="${listId}">${h3Text}</a></li>`;
+      dropdownItems.push(dropdownItem);
     });
     localStorage.setItem("allLists", JSON.stringify(allLists));
+    saveDropdownItemsToLocalStorage(dropdownItems);
   };
   const loadTasksFromLocalStorage = () => {
     const allLists = JSON.parse(localStorage.getItem("allLists"));
@@ -36,6 +50,7 @@ $(document).ready(() => {
         })
         .disableSelection();
     }
+    loadDropdownItemsFromLocalStorage();
   };
   loadTasksFromLocalStorage();
   // Hide .listName div by default
@@ -109,6 +124,7 @@ $(document).ready(() => {
       listCounter += 1;
       saveTasksToLocalStorage();
       localStorage.setItem("listCounter", listCounter);
+      loadDropdownItemsFromLocalStorage();
     }
     allow = false;
     saveTasksToLocalStorage();
@@ -130,6 +146,7 @@ $(document).ready(() => {
       });
       saveTasksToLocalStorage();
     }
+    loadDropdownItemsFromLocalStorage();
   });
   $(document).on("click", ".listNameInput", function () {
     $(this).val("");
