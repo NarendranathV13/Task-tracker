@@ -1,26 +1,22 @@
 $(document).ready(() => {
     var uniqueId = 1; // Initialize a unique ID counter
+    let listCounter = 1; // Initialize the counter for new list IDs
+    let newListId = "";
     const dg = "danger", scs = "success", wr = "warning";
     const saveTasksToLocalStorage = () => {
-        const tasks = {
-            todo: $("#sortable1").html(),
-            inProgress: $("#sortable2").html(),
-        };
         const allLists = {};
         $(".listContainer").each(function() {
             const listId = $(this).find("ul").attr("id");
             allLists[listId] = $(this).prop("outerHTML");
         });
         localStorage.setItem("allLists", JSON.stringify(allLists));
-        localStorage.setItem("tasks", JSON.stringify(tasks));
     };
     const loadTasksFromLocalStorage = () => {
         const allLists = JSON.parse(localStorage.getItem("allLists"));
-        const tasks = JSON.parse(localStorage.getItem("tasks"));
         if (allLists) {
             // Replace existing lists with loaded lists
             $(".lists").html(Object.values(allLists).join(""));
-            // Reinitialize sortable for all lists
+            listCounter = Object.keys(allLists).length + 1;
             $(".sortable").sortable({
                 connectWith: ".sortable",
                 stop: (event, ui) => {
@@ -30,14 +26,10 @@ $(document).ready(() => {
                 }
             }).disableSelection();
         }
-        if (tasks) {
-            $("#sortable1").html(tasks.todo);
-            $("#sortable2").html(tasks.inProgress);
-        }
     };
     loadTasksFromLocalStorage();
     // Hide .listName div by default
-    $(".listName").hide();
+    $(".listName").show();
     $(document).off("click", ".dropdown-item");
     $(document).on("click", ".dropdown-item", function (event) {
         event.preventDefault();
@@ -49,7 +41,7 @@ $(document).ready(() => {
             taskItem.data("targetSortable", targetSortable);
         }
     });
-        // Function to show a toaster
+        // Function to show a toaster$(".sortable
     const showToast = (message, dg) => {
         const toast = `
             <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-animation="true" data-bs-delay="3000">
@@ -93,37 +85,19 @@ $(document).ready(() => {
             $(this).remove();
         });
     }
-    const enableSortable3 = () => {
-        $(".sortable3").sortable({
-            connectWith: ".sortable"
-        }).disableSelection();
-    };
-    $("#addNewList").click(() => {
-        $(".listName").show();
-        enableSortable3(); // Enable sorting for sortable3 when a new list is added
-    });
     let allow=true;
-    let listCounter = 3; // Initialize the counter for new list IDs
     $("#addNewList").click(() => {
         if(allow==true){
         // Append the new list container
-        const newListId = "sortable" + listCounter;
+        newListId = "sortable" + listCounter; // Set the newListId
         const newList = $(`<div class="listName listContainer">
                                 <input type='text' class='form-control listNameInput' placeholder='Enter List Name'>
                             <ul id="${newListId}" class="dropfalse sortable"></ul>
                         </div>`);
         $(".lists").append(newList);        
-        $("#" + newListId).sortable({
-            connectWith: ".sortable",
-            stop: (event, ui) => {
-                saveTasksToLocalStorage();
-                const taskName = ui.item.find("h4").text();
-                showToast(`Task "${taskName}" is moved successfully`, scs);
-            }
-        });
-        listCounter++; // Increment the counter for the next list
     }
     allow=false;
+    listCounter++;
     saveTasksToLocalStorage();
     });
     $(document).on("focusout", ".listNameInput", function () {
@@ -131,6 +105,15 @@ $(document).ready(() => {
         if (newName !== "") {
             $(this).replaceWith(`<h3 class="bg-info text-center p-3 rounded-3">${newName}</h3>`);
             allow=true;
+            $(".listName").show();
+            $("#" + newListId).sortable({
+                connectWith: ".sortable",
+                stop: (event, ui) => {
+                    const taskName = ui.item.find("h4").text();
+                    showToast(`Task "${taskName}" is moved successfully`, scs);
+                }
+            });
+            saveTasksToLocalStorage();
         }
     });
     $(document).on("click", ".listNameInput", function () {
@@ -212,7 +195,7 @@ $(document).ready(() => {
             showToast(`Task "${taskName}" is moved successfully`, scs);
         }
     }).disableSelection();
-    $(document).on("click", "#sortable1 li, #sortable2 li, #sortable3 li", (event) => {
+    $(document).on("click", ".sortable li", (event) => {
         const taskItem = $(event.currentTarget);
         editTask(taskItem);
     });
