@@ -1,19 +1,17 @@
-
 body {
     background-color: rgb(24, 24, 172);
     background: -moz-linear-gradient(180deg, rgba(24, 24, 172, 1) 15%, rgba(21, 52, 214, 1) 37%, rgba(0, 212, 255, 1) 99%);
     background: -webkit-linear-gradient(180deg, rgba(24, 24, 172, 1) 15%, rgba(21, 52, 214, 1) 37%, rgba(0, 212, 255, 1) 99%);
     background: linear-gradient(180deg, rgba(24, 24, 172, 1) 15%, rgba(21, 52, 214, 1) 37%, rgba(0, 212, 255, 1) 99%);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#1818ac", endColorstr="#00d4ff", GradientType=1);
-   
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-.disp{
-    min-height:100vh ;
+.disp {
+    min-height: 100vh;
 }
-.navbar{
+.navbar {
     background-color: #004d9b !important;
 }
 .lists {
@@ -21,7 +19,6 @@ body {
     overflow-x: auto;
     min-height: 90vh;
 }
-
 .listContainer {
     flex: 0 0 auto;
     width: 400px;
@@ -36,11 +33,10 @@ body {
     padding: 10px;
     width: 100%;
     min-height: 100px;
-    
     overflow-Y: auto;
     border-radius: 10px !important;
 }
-.sortable li{
+.sortable li {
     padding: 10px;
     font-size: 16px;
     width: 100%;
@@ -57,17 +53,19 @@ body {
     right: 0;
     cursor: pointer;
 }
-
 .custom-input-group {
     display: flex;
     gap: 10px;
 }
-
 .btn-wide {
     flex: 1;
     white-space: nowrap;
 }
-
 .red-placeholder::placeholder {
     color: red;
+}
+.listContainer li {
+    background-color: #474747;
+    color: white;
+    box-shadow: 2px 3px 4px 2px #111111af;
 }
