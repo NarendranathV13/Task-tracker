@@ -69,3 +69,14 @@ body {
     color: white;
     box-shadow: 2px 3px 4px 2px #111111af;
 }
+.dlt{
+    position: relative;
+}
+.delete-list{
+    color: rgb(246, 92, 92);
+    position: absolute;
+    top: 2;
+    right: 0;
+    margin-right: 15px;
+    cursor: pointer;
+}

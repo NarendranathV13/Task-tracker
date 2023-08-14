@@ -25,7 +25,7 @@ $(document).ready(() => {
   };
   // Function to update position dropdown
   const updatePositionDropdown = (ulId) => {
-    const liCount = $("#" + ulId).children("li").length;
+    const liCount = $("#" + ulId).children("li").length+1;
     let positionOptions = "";
     for (let i = 0; i < liCount; i++) {
       positionOptions += `<li><a class="dropdown-item" href="#">${
@@ -36,17 +36,16 @@ $(document).ready(() => {
   };
   // the dropdown button for position is clicked
   $(document).on("click", "#dropdownMenuButton2", function () {
-    const taskItem = $("#editModal").data("taskItem");
-    const parentUlId = taskItem.parent().attr("id");
-    updatePositionDropdown(parentUlId);
-  });
+    const targetSortable = $(this).data("targetSortable"); // Retrieve the data attribute
+    updatePositionDropdown(targetSortable);
+  });  
   // option in the position dropdown is clicked
   $(document).on("click", "#position .dropdown-item", function () {
     selectedNewPosition = $(this).text(); // Store the selected position
   });
   // Reorder tasks within the same list
-  const reorderTasks = (taskItem, newPosition) => {
-    const parentUlId = taskItem.parent().attr("id");
+  const reorderTasks = (taskItem,parentUl, newPosition) => {
+    const parentUlId = parentUl;
     const targetSortable = $("#" + parentUlId);
     const currentIndex = taskItem.index();
     const targetIndex = parseInt(newPosition) - 1;
@@ -106,6 +105,7 @@ $(document).ready(() => {
     if (targetSortable !== currentSortable) {
       taskItem.data("targetSortable", targetSortable);
     }
+    $("#dropdownMenuButton2").data("targetSortable", targetSortable); // Set the data attribute
   });
   // Function to show a toaster
   const showToast = (message, dg) => {
@@ -120,24 +120,24 @@ $(document).ready(() => {
   };
   const deleteTask = (taskItem) => {
     const modal = `
-            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            Are you sure you want to delete this task?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
-                        </div>
-                    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this task?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+`;
     $("body").append(modal);
     $("#deleteModal").modal("show");
     //delete confirmation
@@ -173,7 +173,7 @@ $(document).ready(() => {
     const newName = $(this).val().trim();
     if (newName !== "") {
       $(this).replaceWith(
-        `<h3 class="bg-info text-center p-3 rounded-3">${newName}</h3>`
+        `<h3 class="bg-info text-center p-3 rounded-3 dlt">${newName} <i class="fas fa-times delete-list"></i></h3>`
       );
       allow = true;
       $(".listName").show();
@@ -191,41 +191,61 @@ $(document).ready(() => {
   $(document).on("click", ".listNameInput", function () {
     $(this).val("");
   });
+  //delete new list
+  $(document).on("click", ".delete-list", function () {
+    const listContainer = $(this).closest(".listContainer");
+    const listId = listContainer.find("ul").attr("id");
+    // Remove list from local storage
+    const allLists = JSON.parse(localStorage.getItem("allLists"));
+    delete allLists[listId];
+    localStorage.setItem("allLists", JSON.stringify(allLists));
+    // Remove list container from UI
+    listContainer.remove();
+    // Remove dropdown item from local storage and UI
+    const dropdownItems = JSON.parse(localStorage.getItem("dropdownItems"));
+    const dropdownItemToRemove = dropdownItems.find(item => item.includes(`data-target="${listId}"`));
+    if (dropdownItemToRemove) {
+        dropdownItems.splice(dropdownItems.indexOf(dropdownItemToRemove), 1);
+        localStorage.setItem("dropdownItems", JSON.stringify(dropdownItems));
+        loadDropdownItemsFromLocalStorage();
+    }
+});
   // Function to validate and add tasks
   $("#addToList").click(function () {
     var taskName = $("#taskName").val().trim();
     var taskDesc = $("#taskDesc").val().trim();
+    const validate=(color,msg1,msg2)=>{
+      $("#taskName, #taskDesc").css("border-color", color);
+      $("#taskName").attr("placeholder", msg1);
+      $("#taskDesc").attr("placeholder", msg2);
+    }
+    const validate2=(id,color,msg)=>{
+      $(id).css("border-color", color);
+      $(id).attr("placeholder",msg);
+    }
     // Validate input fields
     if (taskName === "" && taskDesc === "") {
-      $("#taskName, #taskDesc").css("border-color", "red");
-      $("#taskName").attr("placeholder", "Fill task name");
-      $("#taskDesc").attr("placeholder", "Fill the description");
+      validate("red","Fill task name","Fill the description");
       $("#taskName,#taskDesc").addClass("red-placeholder");
       return;
     } else {
-      $("#taskName").css("border-color", "");
-      $("#taskName").attr("placeholder", "Task Name");
-      $("#taskDesc").attr("placeholder", "Task Description");
+      validate("","Task Name","Task Description");
       $("#taskName,#taskDesc").removeClass("red-placeholder");
     }
     if (taskDesc === "") {
-      $("#taskDesc").css("border-color", "red");
-      $("#taskDesc").attr("placeholder", "Fill the description");
+      validate2("#taskDesc","red","Fill the description");
       $("#taskDesc").addClass("red-placeholder");
       return;
     } else {
-      $("#taskDesc").css("border-color", "");
-      $("#taskDesc").attr("placeholder", "Task Description");
+      validate2("#taskDesc","","Task Description");
       $("#taskName,#taskDesc").removeClass("red-placeholder");
     }
     if (taskName === "") {
-      $("#taskName").css("border-color", "red");
-      $("#taskName").attr("placeholder", "Fill task name");
+      validate2("#taskName","red","Fill task name");
       $("#taskName").addClass("red-placeholder");
-      return;
+      return; 
     } else {
-      $("#taskName").css("border-color", "");
-      $("#taskName").attr("placeholder", "Task Name");
+      validate2("#taskName","","Task Name")
       $("#taskName,#taskDesc").removeClass("red-placeholder");
     }
     // Create new task
@@ -311,7 +331,7 @@ $(document).ready(() => {
     $("#" + targetSortable).append(taskItem);
   }
   if (selectedNewPosition !== null) {
-    reorderTasks(taskItem, selectedNewPosition);
+    reorderTasks(taskItem,targetSortable, selectedNewPosition);
     selectedNewPosition = null; // Reset selected position
   }
   if (editedName !== "") {
@@ -320,6 +340,7 @@ $(document).ready(() => {
   taskItem.find(".task-desc").text(editedDesc);
   // Move the task to the appropriate list if needed
   if (parentList !== taskItem.parent().attr("id")) {
+   
     $("#" + parentList).append(taskItem);
   }
   $("#editModal").modal("hide");
